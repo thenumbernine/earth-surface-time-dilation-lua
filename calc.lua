@@ -155,7 +155,7 @@ local lats = x * 180 - 90
 local function plotvec(args)
 	local col = args[1]
 	assert(matrix:isa(col))
-	args.terminal = 'svg size 1024,768'
+	args.terminal = 'svg size 1024,768 background rgb "white"'
 	args.style = 'data lines'
 	args.data = {lats, col}
 	args.xlabel = 'latitude (degrees)'
