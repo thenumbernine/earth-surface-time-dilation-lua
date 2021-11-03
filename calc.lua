@@ -9,13 +9,7 @@ print("speed of light, in m/s:", speedOfLight_in_m_per_s)
 local gravitationalConstant_in_m3_per_kg_s2 = 6.67384e-11
 print("gravitational constant, in m^3 / (kg s^2):", gravitationalConstant_in_m3_per_kg_s2)
 
-local earth = {
-	name = 'Earth',
-	equatorialRadius_in_m = 6378136,
-	inverseFlattening = 298.257223563,
-	rotationPeriod_in_s = (23 + (56 + 4.09053083288 / 60) / 60) * 60 * 60,	-- sidereeal?
-	mass_in_kg = 5.9736e+24,
-}
+
 local sun = {
 	name = 'Sun',
 	equatorialRadius_in_m = 6.960e+8,
@@ -27,9 +21,89 @@ local sun = {
 	rotationPeriod_in_s = 27 * 24 * 60 * 60,	-- varies by latitude really ...
 	mass_in_kg = 1.9891e+30,
 }
+local earth = {
+	name = 'Earth',
+	equatorialRadius_in_m = 6378136,
+	inverseFlattening = 298.257223563,
+	rotationPeriod_in_s = (23 + (56 + 4.09053083288 / 60) / 60) * 60 * 60,	-- sidereeal?
+	mass_in_kg = 5.9736e+24,
+}
+local mercury = {
+	name = 'Mercury',
+	equatorialRadius_in_m = 2440e+3,
+	inverseFlattening = math.huge,
+	rotationPeriod_in_s = 58.6462 * 60 * 60 * 24,
+	mass_in_kg = 3.302e+23,
+}
+local venus = {
+	name = 'Venus',
+	equatorialRadius_in_m = 6051.893e+3,
+	inverseFlattening = math.huge,
+	rotationPeriod_in_s = -243.0185 * 60 * 60 * 24,
+	mass_in_kg = 4.8685e+24,
+}
+local moon = {
+	name = 'Moon',
+	equatorialRadius_in_m = 1.73753e+6,
+	inverseFlattening = 1/0.0012,
+	mass_in_kg = 7.349e+22,
+	rotationPeriod_in_s = 27.321662 * 60 * 60 * 24,
+}
+local mars = {
+	name = 'Mars',
+	equatorialRadius_in_m = 3397e+3,
+	inverseFlattening = 154.409,
+	mass_in_kg = 6.4185e+23,
+	rotationPeriod_in_s = 24.622962/24 * 60 * 60 * 24,
+}
+local jupiter = {
+	name = 'Jupiter',
+	equatorialRadius_in_m = 71492e+3,
+	inverseFlattening = 1/0.06487,
+	mass_in_kg = 1.89813e+27,
+	rotationPeriod_in_s = 10 * 60 * 60,	-- 10 hours
+}
+local saturn = {
+	name = 'Saturn',
+	equatorialRadius_in_m = 60268e+3,
+	inverseFlattening = 1/0.09796,
+	mass_in_kg = 5.68319e+26,
+	rotationPeriod_in_s = 24 + 60 * (39 + 60 * 10),	-- https://www.jpl.nasa.gov/news/rotation-period-of-saturn-determined
+}
+local uranus = {
+	name = 'Uranus',
+	equatorialRadius_in_m = 25559e+3,
+	inverseFlattening = 1/0.02293,
+	mass_in_kg = 8.68103e+25,
+	rotationPeriod_in_s = 23 * 60 * 60,	-- 23 hours (+5 / -2 hours ... ?)
+}
+local neptune = {
+	name = 'Neptune',
+	equatorialRadius_in_m = 24766e+3,
+	inverseFlattening = 1/0.0171,
+	mass_in_kg = 1.0241e+26,
+}
+local pluto = {
+	name = 'Pluto',
+	equatorialRadius_in_m = 1.151e+6,
+	rotationPeriod_in_s = 6.387230 * 60 * 60 * 24,	-- but it's negative
+	mass_in_kg = 1.314e+22,
+	inverseFlattening = math.huge,
+}
+local FakePlanet = {
+	name = 'Fake',
+	equatorialRadius_in_m = 1e+4,
+	inverseFlattening = 1e+2,
+	rotationPeriod_in_s = 60,
+	mass_in_kg = 1e+30,
+}
 
-local planet = earth
 --local planet = sun
+local planet = earth
+--local planet = saturn
+
+
+
 print('planet', planet.name)
 
 -- check for earth
@@ -236,31 +310,47 @@ what about for a timelike geodesic in a diagonal metric?
 -1 = g_00 (u^0)^2 + g_ii (u^i)^2
 --]]
 
-local function schwarzschildSphericalMetric(lat)
+local function newtonApproxMetric(x,y,z)
+	local r = math.sqrt(x*x + y*y + z*z)
+	-- would this 'r' be isotropic or not?
 	local R = schwarzschildRadius_in_m
-	local r = geodeticDist(lat, 0, 0)	-- is this isotropic r or schwarzschild r?
+	local neg2phi = R / r 
+	local g00 = -1 + neg2phi
+	local gii = 1 + neg2phi
+	return matrix{
+		{g00, 0, 0, 0},
+		{0, gii, 0, 0},
+		{0, 0, gii, 0},
+		{0, 0, 0, gii},
+	}
+end
+
+local function schwarzschildSphericalMetric(x,y,z)
+	local theta = math.atan2(math.sqrt(x*x + y*y), z)
+	-- is this isotropic r or schwarzschild r?
+	local r = math.sqrt(x*x + y*y + z*z)
 	--[[ if it's isotropic r then ...
 	r = r * (1 + R / (4 * r))^2
 	--]]
-	local rCosLat = r * math.cos(math.rad(lat))
+	local R = schwarzschildRadius_in_m
+	local rsinth = r * math.sin(theta)
 	local ir = 1 / r
 	local u = 1 - R * ir
 	return matrix{
-		{-u,	0,		0,		0},
-		{0,		1/u,	0,		0},
-		{0,		0,		r*r,	0},
-		{0,		0,		0,		rCosLat*rCosLat},
+		{-u, 0, 0, 0},
+		{0, 1/u, 0, 0},
+		{0, 0, r*r, 0},
+		{0, 0, 0, rsinth*rsinth},
 	}
 end
 
 -- if non-isotropic is pseudo-cartesian, then does that mean isotropic is genuine cartesian?
-local function schwarzschildPseudoCartesianMetric(lat)
-	local R = schwarzschildRadius_in_m
-	local x,y,z = geodeticPos(lat, 0, 0)
+local function schwarzschildPseudoCartesianMetric(x,y,z)
 	local r = math.sqrt(x*x + y*y + z*z)
 	--[[ if |xyz|2 is isotropic then ...
 	r = r * (1 + R / (4 * r))^2
 	--]]
+	local R = schwarzschildRadius_in_m
 	local ir = 1 / r
 	local ux = x * ir
 	local uy = y * ir
@@ -280,16 +370,16 @@ local function schwarzschildPseudoCartesianMetric(lat)
 	local g23 = uy * uz * iu * Rsq * ir
 	local g31 = uz * ux * iu * Rsq * ir
 	return matrix{
-		{g00,	0,		0,		0},
-		{0,		g11,	g12,	g31},
-		{0,		g12,	g22,	g23},
-		{0,		g31,	g23,	g33},
+		{g00, 0, 0, 0},
+		{0, g11, g12, g31},
+		{0, g12, g22, g23},
+		{0, g31, g23, g33},
 	}
 end
 
-local function isotropicCartesianMetric(lat)
+local function isotropicCartesianMetric(x,y,z)
+	local r = math.sqrt(x*x + y*y + z*z)
 	local R = schwarzschildRadius_in_m
-	local r = geodeticDist(lat, 0, 0)	
 	-- [[ if it's schwarzschild r, then convert it to isotropic r:
 	r = .5 * (r - .5 * R + math.sqrt(r * (r - R)))
 	--]]
@@ -301,16 +391,17 @@ local function isotropicCartesianMetric(lat)
 	local mum2 = mum * mum
 	local mup4 = mup2 * mup2
 	return matrix{
-		{-mum2/mup2,	0,		0,		0},
-		{0,				mup4,	0,		0},
-		{0,				0,		mup4,	0},
-		{0,				0,		0,		mup4},
+		{-mum2/mup2, 0, 0, 0},
+		{0, mup4, 0, 0},
+		{0, 0, mup4, 0},
+		{0, 0, 0, mup4},
 	}
 end
 
-local function isotropicSphericalMetric(lat)
+local function isotropicSphericalMetric(x,y,z)
+	local r = math.sqrt(x*x + y*y + z*z)
+	local theta = math.atan2(math.sqrt(x*x + y*y), z)	-- is theta pre or post isotropic radial transform?
 	local R = schwarzschildRadius_in_m
-	local r = geodeticDist(lat, 0, 0)	
 	-- [[ if it's schwarzschild r, then convert it to isotropic r:
 	r = .5 * (r - .5 * R + math.sqrt(r * (r - R)))
 	--]]
@@ -321,24 +412,24 @@ local function isotropicSphericalMetric(lat)
 	local mup2 = mup * mup 
 	local mum2 = mum * mum
 	local mup4 = mup2 * mup2
-	local rsinth = r * math.cos(math.rad(lat))	-- spherical sin(theta) = geo cos(lat)
+	local rsinth = r * math.sin(theta)	-- spherical sin(theta) = geo cos(lat)
 	return matrix{
-		{-mum2/mup2,	0,		0,			0},
-		{0,				mup4,	0,			0},
-		{0,				0,		mup4*r*r,	0},
-		{0,				0,		0,			mup4*rsinth*rsinth},
+		{-mum2/mup2, 0, 0, 0},
+		{0, mup4, 0, 0},
+		{0, 0, mup4*r*r, 0},
+		{0, 0, 0, mup4*rsinth*rsinth},
 	}
 end
 
-local function kerrBoyerLindquistSphericalMetric(lat)
+local function kerrBoyerLindquistSphericalMetric(x,y,z)
+	local r = math.sqrt(x*x + y*y + z*z)
+	local theta = math.atan2(math.sqrt(x*x + y*y), z)
 	local R = schwarzschildRadius_in_m
-	local r = geodeticDist(lat, 0, 0)	
 	local rsq = r * r
 	local a = kerr_a_in_m
 	local asq = a * a
-	local geophi = math.rad(lat)	-- geo phi = pi/2 - spherical theta
-	local sinth = math.cos(geophi)
-	local costh = math.sin(geophi)
+	local sinth = math.sin(theta)
+	local costh = math.cos(theta)
 	local sinthsq = sinth * sinth
 	local costhsq = costh * costh
 	local sigma = rsq + asq * costhsq 
@@ -349,11 +440,61 @@ local function kerrBoyerLindquistSphericalMetric(lat)
 	local g22 = sigma
 	local g33 = (rsq + asq + R * asq * r * sinthsq / sigma) * sinthsq
 	return matrix{
-		{g00,	0,		g02,	0},
-		{0,		g11,	0,		0},
-		{g02,	0,		g22,	0},
-		{0,		0,		0,		g33},
+		{g00, 0, g02, 0},
+		{0, g11, 0, 0},
+		{g02, 0, g22, 0},
+		{0, 0, 0, g33},
 	}
+end
+
+local eta = matrix{4,4}:lambda(function(i,j)
+	return i == j and (i == 1 and -1 or 1) or 0
+end)
+local function kerrSchildMetric(x,y,z)
+	local R = schwarzschildRadius_in_m
+	local a = kerr_a_in_m
+	local asq = a * a
+	--[[
+	r is defined by (x^2 + y^2) / (r^2 + a^2) + z^2 / r^2 = 1
+	r^4 + r^2 (a^2 - (x^2 + y^2 + z^2)) - z^2 a^2 = 0
+	r^2 = 1/2 (
+		- (a^2 - (x^2 + y^2 + z^2))
+		+- sqrt(
+			(a^2 - (x^2 + y^2 + z^2))^2
+			- 4 (- z^2 a^2)
+		)
+	)
+	r^2 = 1/2 (
+		(x^2 + y^2 + z^2) - a^2
+		+- sqrt(
+			(a^2 - (x^2 + y^2 + z^2))^2
+			+ 4 z^2 a^2
+		)
+	)
+	--]]
+	local zsq = z*z
+	local b = asq - (x*x + y*y + zsq)
+	local rsq = .5 * (
+		-b
+		+ math.sqrt(
+			b * b
+			+ 4 * asq * zsq
+		)
+	)
+	local r = math.sqrt(rsq)
+	local rcub = r * rsq
+	local rqu = rsq * rsq
+
+	-- f = (2 G M r^3) / (r^4 + a^2 z^2)
+	local f = R * rcub / (rqu + asq * zsq)
+
+	-- k = (1, (r x + a y) / (r^2 + a^2), (r y - a x) / (r^2 + a^2), z / r)
+	local invdenom = 1 / (rsq + asq)
+	local k = matrix{1, (r * x + a * y) * invdenom, (r * y - a * x) * invdenom, z / r}
+
+	-- g_uv = eta_uv + f k_u k_v
+	local g = eta + f * matrix.outer(k, k)
+	return g
 end
 
 
@@ -431,60 +572,90 @@ whereas, when measuring a unit of resting time coordinate, 1/u^0 will be how muc
 ... right?
 that's why we use 1/u^0?
 --]]
-local generalRelativitySchwarzschildSphericalRestingObj_ds_dt = lats:map(function(lat)
-	-- TODO instead of {1,0,0,0}, each metric should have its own associated timelike vector, equal to d/dt of the chart
-	return 1 /  normalize(matrix{1,0,0,0}, schwarzschildSphericalMetric(lat))[1]
-end)
-plotvec{
-	generalRelativitySchwarzschildSphericalRestingObj_ds_dt,
-	output='gr-rest-obj-dsdt-schwarzschild-spherical.svg',
-	ylabel='dt',
-	format={y='%.20f'},
-	title='surface gravitational time dilation, not considering rotation, Schwarzschild metric',
-}
-
-for _,info in ipairs{
+local metrics = {
 	{
-		metric = schwarzschildPseudoCartesianMetric,
+		g = newtonApproxMetric,
+		title = 'Newtonian approximation',
+	},
+	{
+		g = schwarzschildSphericalMetric,
+		title = 'Schwarzschild spherical',
+	},
+	{
+		g = schwarzschildPseudoCartesianMetric,
 		title = 'Schwarzschild pseudo-cartesian',
 	},
 	
 	-- how does ds/dt for resting objects look under isotropic coordinates?
 	{
-		metric = isotropicCartesianMetric,
+		g = isotropicCartesianMetric,
 		title = 'isotropic Cartesian',
 	},
 	{
-		metric = isotropicSphericalMetric,
+		g = isotropicSphericalMetric,
 		title = 'isotropic spherical',
 	},
-} do
+	
+	
+	-- though, technically, a stationary point in Kerr metric would be equivalent to a rotating point on a Schwarzschild metric, right?
+	{
+		g = kerrBoyerLindquistSphericalMetric,
+		title = 'Kerr Boyer-Lindquist spherical',
+	},
+
+	{
+		g = kerrSchildMetric,
+		title = 'Kerr-Schild',
+	},
+} 
+-- TODO these are all nearly identical. just use one.
+-- maybe aftewards plot the matrix of differences, but they are all nearly zero anyways.
+for _,metric in ipairs(metrics) do
+	local g = metric.g
+	local title = metric.title
 	local dsdts = lats:map(function(lat)
-		return 1 /  normalize(matrix{1,0,0,0}, info.metric(lat))[1]
+		local x,y,z = geodeticPos(lat, 0, 0)
+		-- TODO instead of {1,0,0,0}, each metric should have its own associated timelike vector, equal to d/dt of the chart
+		return 1 /  normalize(matrix{1,0,0,0}, g(x,y,z))[1]
 	end)
+	metric.dsdts = dsdts
 	plotvec{
 		dsdts,
-		output = 'gr-rest-obj-dsdt-'..info.title..'.svg',
+		output = 'gr-rest-obj-dsdt-'..title..'.svg',
 		ylabel = 'dt',
 		format = {y = '%.20f'},
-		title = 'surface gravitational time dilation of an object at rest (4-vel=[1,0,0,0]), '..info.title..' metric',
+		title = 'surface gravitational time dilation of an object at rest (4-vel=[1,0,0,0]), '..title..' metric',
 	}
+
+--	local dsdtForDist = (x * 2 * equatorialRadius_in_m):map(function(r)
+--	end)
+
+	-- would the GR standard time be the pole or the equator?
+	local dt00ref = dsdts[math.ceil(#dsdts/2)]
+	--[[
+	in order to normalize our day length 
+	(since the schwarzschild metric g_00 term will always be non-unit on the surface at all latitudes
+	i will choose the dt at the pole (which is stationary) as the reference for how long a day should last
+	
+	honestly if the previous graph is identical for each metric then this will be identical too
+	--]]
+	local changeInDayInNS = (dsdts / dt00ref - 1) * 24 * 60 * 60 * 1e+9
+	metric.changeInDayInNS = changeInDayInNS
+	plotvec{
+		changeInDayInNS,
+		output = 'change-in-day-gr-obj-at-rest-'..title..'.svg',
+		ylabel = 'dt (ns)',
+		title = 'change in day duration of object at rest, '..title..' metric',
+	}
+
+	
 end
-
---[[
-in order to normalize our day length 
-(since the schwarzschild metric g_00 term will always be non-unit on the surface at all latitudes
-i will choose the dt at the pole (which is stationary) as the reference for how long a day should last
---]]
-local dt00ref = math.sqrt(1 - schwarzschildRadius_in_m / geodeticDist(90, 0, 0))
-local generalRelativityRestingGravTimeDilationChangeInDayInNS = (generalRelativitySchwarzschildSphericalRestingObj_ds_dt / dt00ref - 1) * 24 * 60 * 60 * 1e+9
-plotvec{
-	generalRelativityRestingGravTimeDilationChangeInDayInNS,
-	output = 'change-in-day-gr-obj-at-rest.svg',
-	ylabel = 'dt (ns)',
-	title = 'change in duration of a day due to GR Schwarzschild metric of object at rest)',
-}
-
+print('differences in metrics:')
+print(matrix{#metrics, #metrics}:lambda(function(i,j)
+	local mi = metrics[i]
+	local mj = metrics[j]
+	return (mi.dsdts - mj.dsdts):normSq()
+end))
 
 
 --[[ for rotating objects, in spherical coordinates
@@ -511,12 +682,16 @@ Schwarzschild metric ...
 I guess I could try to claim that r dφ/dt needs to be converted to a 4-velocity ...
 I'm not convinced on the schwarzschild implementation, esp with however the 4-velocity should be converted ...
 --]]
+local dt00ref = math.sqrt(1 - schwarzschildRadius_in_m / geodeticDist(90, 0, 0))
 local gravTimeDilationSchwarzschildSpherical = matrix{n}:lambda(function(i)
 	local lat = lats[i]
 	local beta = lorentzBetas[i]
-	local r = geodeticDist(lat, 0, 0)
+	local x,y,z = geodeticPos(lat, 0, 0)
+	--[[
 	local cosPhi = math.cos(math.rad(lat))
-	local g = schwarzschildSphericalMetric(lat)
+	local r = math.sqrt(x*x + y*y + z*z)
+	--]]
+	local g = schwarzschildSphericalMetric(x,y,z)
 	return math.sqrt(
 		-g[1][1]
 		-- how did I come up with part this again?
@@ -553,7 +728,7 @@ local gravTimeDilationSchwarzschildPseudoCartesian = matrix{n}:lambda(function(i
 	local vx,vy,vz = geodeticVel(lat,0,0)
 	local c = speedOfLight_in_m_per_s
 	local u3 = matrix{0, vx/c, vy/c, vz/c}			-- is this right ...
-	local g = schwarzschildPseudoCartesianMetric(lat)
+	local g = schwarzschildPseudoCartesianMetric(x,y,z)
 	local ds3 = u3 * g * u3
 	local u0 = math.sqrt((ds3 + 1) / -g[1][1])
 	--[[ such that now u0,u3 should give us -1 everywhere ... check
@@ -564,8 +739,6 @@ local gravTimeDilationSchwarzschildPseudoCartesian = matrix{n}:lambda(function(i
 --	error'here'
 	return (1/u0) / dt00ref
 end)
-
-
 plotvec{
 	gravTimeDilationSchwarzschildPseudoCartesian,
 	output = 'grav-dt-schwarzschild-pseudocartesian.svg',
