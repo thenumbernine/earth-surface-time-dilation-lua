@@ -1,0 +1,32 @@
+name = "earth-surface-time-dilation"
+files = {
+	["Makefile"] = "earth-surface-time-dilation/Makefile",
+	["README.md"] = "earth-surface-time-dilation/README.md",
+	["calc.cpp"] = "earth-surface-time-dilation/calc.cpp",
+	["calc.lua"] = "earth-surface-time-dilation/calc.lua",
+	["change-in-day-gr-obj-at-rest-Kerr Boyer-Lindquist spherical.svg"] = "earth-surface-time-dilation/change-in-day-gr-obj-at-rest-Kerr Boyer-Lindquist spherical.svg",
+	["change-in-day-gr-obj-at-rest-Kerr-Schild.svg"] = "earth-surface-time-dilation/change-in-day-gr-obj-at-rest-Kerr-Schild.svg",
+	["change-in-day-gr-obj-at-rest-Newtonian approximation.svg"] = "earth-surface-time-dilation/change-in-day-gr-obj-at-rest-Newtonian approximation.svg",
+	["change-in-day-gr-obj-at-rest-Schwarzschild pseudo-cartesian.svg"] = "earth-surface-time-dilation/change-in-day-gr-obj-at-rest-Schwarzschild pseudo-cartesian.svg",
+	["change-in-day-gr-obj-at-rest-Schwarzschild spherical.svg"] = "earth-surface-time-dilation/change-in-day-gr-obj-at-rest-Schwarzschild spherical.svg",
+	["change-in-day-gr-obj-at-rest-isotropic Cartesian.svg"] = "earth-surface-time-dilation/change-in-day-gr-obj-at-rest-isotropic Cartesian.svg",
+	["change-in-day-gr-obj-at-rest-isotropic spherical.svg"] = "earth-surface-time-dilation/change-in-day-gr-obj-at-rest-isotropic spherical.svg",
+	["change-in-day-sr.svg"] = "earth-surface-time-dilation/change-in-day-sr.svg",
+	["dist.svg"] = "earth-surface-time-dilation/dist.svg",
+	["gr-rest-obj-dsdt-Kerr Boyer-Lindquist spherical.svg"] = "earth-surface-time-dilation/gr-rest-obj-dsdt-Kerr Boyer-Lindquist spherical.svg",
+	["gr-rest-obj-dsdt-Kerr-Schild.svg"] = "earth-surface-time-dilation/gr-rest-obj-dsdt-Kerr-Schild.svg",
+	["gr-rest-obj-dsdt-Newtonian approximation.svg"] = "earth-surface-time-dilation/gr-rest-obj-dsdt-Newtonian approximation.svg",
+	["gr-rest-obj-dsdt-Schwarzschild pseudo-cartesian.svg"] = "earth-surface-time-dilation/gr-rest-obj-dsdt-Schwarzschild pseudo-cartesian.svg",
+	["gr-rest-obj-dsdt-Schwarzschild spherical.svg"] = "earth-surface-time-dilation/gr-rest-obj-dsdt-Schwarzschild spherical.svg",
+	["gr-rest-obj-dsdt-isotropic Cartesian.svg"] = "earth-surface-time-dilation/gr-rest-obj-dsdt-isotropic Cartesian.svg",
+	["gr-rest-obj-dsdt-isotropic spherical.svg"] = "earth-surface-time-dilation/gr-rest-obj-dsdt-isotropic spherical.svg",
+	["grav-dt-schwarzschild-pseudocartesian.svg"] = "earth-surface-time-dilation/grav-dt-schwarzschild-pseudocartesian.svg",
+	["grav-dt-schwarzschild-spherical.svg"] = "earth-surface-time-dilation/grav-dt-schwarzschild-spherical.svg",
+	["lorentzbeta.svg"] = "earth-surface-time-dilation/lorentzbeta.svg",
+	["lorentzgamma.svg"] = "earth-surface-time-dilation/lorentzgamma.svg",
+	["vel.svg"] = "earth-surface-time-dilation/vel.svg",
+}
+deps = {
+	"gnuplot",
+	"matrix",
+}
